@@ -10,6 +10,7 @@ class User extends Model {
 
 	const SESSION = "User";
 	const SECRET = "HcodePhp7_Secret";
+	const SECRET_IV = "HcodePhp7_Secret_IV";
 	const ERROR = "UserError";
 	const ERROR_REGISTER = "UserErrorRegister";
 

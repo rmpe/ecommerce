@@ -1,11 +1,13 @@
-<?php
+<?php 
 
 use \Hcode\Page;
-use \Hcode\Model\Product; 
-use \Hcode\Model\Category; 
-use \Hcode\Model\Cart; 
-use \Hcode\Model\Address; 
-use \Hcode\Model\User; 
+use \Hcode\Model\Product;
+use \Hcode\Model\Category;
+use \Hcode\Model\Cart;
+use \Hcode\Model\Address;
+use \Hcode\Model\User;
+use \Hcode\Model\Order;
+use \Hcode\Model\OrderStatus;
 
 $app->get('/', function() {
 
@@ -19,7 +21,7 @@ $app->get('/', function() {
 
 });
 
-$app->get("/categories/:idcategory", function($idcategory) {
+$app->get("/categories/:idcategory", function($idcategory){
 
 	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
 
@@ -48,7 +50,7 @@ $app->get("/categories/:idcategory", function($idcategory) {
 
 });
 
-$app->get("/products/:desurl", function($desurl) {
+$app->get("/products/:desurl", function($desurl){
 
 	$product = new Product();
 
@@ -63,21 +65,21 @@ $app->get("/products/:desurl", function($desurl) {
 
 });
 
-$app->get("/cart", function() {
+$app->get("/cart", function(){
 
-	$cart =  Cart::getFromSession();
+	$cart = Cart::getFromSession();
 
 	$page = new Page();
 
 	$page->setTpl("cart", [
-		'cart'=>$cart->getvalues(),
+		'cart'=>$cart->getValues(),
 		'products'=>$cart->getProducts(),
 		'error'=>Cart::getMsgError()
 	]);
 
 });
 
-$app->get("/cart/:idproduct/add", function($idproduct) {
+$app->get("/cart/:idproduct/add", function($idproduct){
 
 	$product = new Product();
 
@@ -88,9 +90,9 @@ $app->get("/cart/:idproduct/add", function($idproduct) {
 	$qtd = (isset($_GET['qtd'])) ? (int)$_GET['qtd'] : 1;
 
 	for ($i = 0; $i < $qtd; $i++) {
-
-		$cart->addProduct($product);
 		
+		$cart->addProduct($product);
+
 	}
 
 	header("Location: /cart");
@@ -98,7 +100,7 @@ $app->get("/cart/:idproduct/add", function($idproduct) {
 
 });
 
-$app->get("/cart/:idproduct/minus", function($idproduct) {
+$app->get("/cart/:idproduct/minus", function($idproduct){
 
 	$product = new Product();
 
@@ -113,7 +115,7 @@ $app->get("/cart/:idproduct/minus", function($idproduct) {
 
 });
 
-$app->get("/cart/:idproduct/remove", function($idproduct) {
+$app->get("/cart/:idproduct/remove", function($idproduct){
 
 	$product = new Product();
 
@@ -128,7 +130,7 @@ $app->get("/cart/:idproduct/remove", function($idproduct) {
 
 });
 
-$app->post("/cart/freight", function() {
+$app->post("/cart/freight", function(){
 
 	$cart = Cart::getFromSession();
 
@@ -146,7 +148,7 @@ $app->get("/checkout", function(){
 	$address = new Address();
 	$cart = Cart::getFromSession();
 
-	if (isset($_GET['zipcode'])) {
+	if (!isset($_GET['zipcode'])) {
 
 		$_GET['zipcode'] = $cart->getdeszipcode();
 
@@ -165,12 +167,13 @@ $app->get("/checkout", function(){
 	}
 
 	if (!$address->getdesaddress()) $address->setdesaddress('');
+	if (!$address->getdesnumber()) $address->setdesnumber('');
 	if (!$address->getdescomplement()) $address->setdescomplement('');
 	if (!$address->getdesdistrict()) $address->setdesdistrict('');
 	if (!$address->getdescity()) $address->setdescity('');
 	if (!$address->getdesstate()) $address->setdesstate('');
 	if (!$address->getdescountry()) $address->setdescountry('');
-	if (!$address->getdeszipcode()) $address->setdesaddress('');
+	if (!$address->getdeszipcode()) $address->setdeszipcode('');
 
 	$page = new Page();
 
@@ -179,12 +182,11 @@ $app->get("/checkout", function(){
 		'address'=>$address->getValues(),
 		'products'=>$cart->getProducts(),
 		'error'=>Address::getMsgError()
-
 	]);
 
 });
 
-$app->post("/checkout", function() {
+$app->post("/checkout", function(){
 
 	User::verifyLogin(false);
 

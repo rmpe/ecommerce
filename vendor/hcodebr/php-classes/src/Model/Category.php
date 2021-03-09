@@ -92,7 +92,7 @@ class Category extends Model {
 				':idcategory'=>$this->getidcategory()
 			]);
 
-		}else {
+		} else {
 
 			return $sql->select("
 				SELECT * FROM tb_products WHERE idproduct NOT IN(
@@ -109,7 +109,7 @@ class Category extends Model {
 
 	}
 
-	public function getProductsPage($page = 1, $itemsPerPage = 3)
+	public function getProductsPage($page = 1, $itemsPerPage = 8)
 	{
 
 		$start = ($page - 1) * $itemsPerPage;
@@ -117,7 +117,7 @@ class Category extends Model {
 		$sql = new Sql();
 
 		$results = $sql->select("
-			SELECT SQL_CALC_FOUND_ROWS * 
+			SELECT SQL_CALC_FOUND_ROWS *
 			FROM tb_products a
 			INNER JOIN tb_productscategories b ON a.idproduct = b.idproduct
 			INNER JOIN tb_categories c ON c.idcategory = b.idcategory
@@ -127,7 +127,7 @@ class Category extends Model {
 			':idcategory'=>$this->getidcategory()
 		]);
 
-		$resultTotal = $sql->select("SELECT FOUND_ROWS () AS nrtotal;");
+		$resultTotal = $sql->select("SELECT FOUND_ROWS() AS nrtotal;");
 
 		return [
 			'data'=>Product::checkList($results),
@@ -142,7 +142,7 @@ class Category extends Model {
 
 		$sql = new Sql();
 
-		$sql->query("INSERT INTO tb_productscategories (idcategory, idproduct) VALUES (:idcategory, :idproduct)", [
+		$sql->query("INSERT INTO tb_productscategories (idcategory, idproduct) VALUES(:idcategory, :idproduct)", [
 			':idcategory'=>$this->getidcategory(),
 			':idproduct'=>$product->getidproduct()
 		]);
@@ -160,7 +160,58 @@ class Category extends Model {
 		]);
 
 	}
+			
+	public static function getPage($page = 1, $itemsPerPage = 10)
+	{
 
-}	
+		$start = ($page - 1) * $itemsPerPage;
+
+		$sql = new Sql();
+
+		$results = $sql->select("
+			SELECT SQL_CALC_FOUND_ROWS *
+			FROM tb_categories 
+			ORDER BY descategory
+			LIMIT $start, $itemsPerPage;
+		");
+
+		$resultTotal = $sql->select("SELECT FOUND_ROWS() AS nrtotal;");
+
+		return [
+			'data'=>$results,
+			'total'=>(int)$resultTotal[0]["nrtotal"],
+			'pages'=>ceil($resultTotal[0]["nrtotal"] / $itemsPerPage)
+		];
+
+	}
+
+	public static function getPageSearch($search, $page = 1, $itemsPerPage = 10)
+	{
+
+		$start = ($page - 1) * $itemsPerPage;
+
+		$sql = new Sql();
+
+		$results = $sql->select("
+			SELECT SQL_CALC_FOUND_ROWS *
+			FROM tb_categories 
+			WHERE descategory LIKE :search
+			ORDER BY descategory
+			LIMIT $start, $itemsPerPage;
+		", [
+			':search'=>'%'.$search.'%'
+		]);
+
+		$resultTotal = $sql->select("SELECT FOUND_ROWS() AS nrtotal;");
+
+		return [
+			'data'=>$results,
+			'total'=>(int)$resultTotal[0]["nrtotal"],
+			'pages'=>ceil($resultTotal[0]["nrtotal"] / $itemsPerPage)
+		];
+
+	}
+
+}
 
  ?>

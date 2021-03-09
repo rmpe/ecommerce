@@ -9,19 +9,19 @@ use \Hcode\Model\User;
 
 class Cart extends Model {
 
-	const SESSION = "cart";
-	const SESSION_ERROR = "cartError";
+	const SESSION = "Cart";
+	const SESSION_ERROR = "CartError";
 
 	public static function getFromSession()
 	{
 
 		$cart = new Cart();
 
-		if (isset($_SESSION[cart::SESSION]) && (int)$_SESSION[cart::SESSION]['idcart'] > 0) {
+		if (isset($_SESSION[Cart::SESSION]) && (int)$_SESSION[Cart::SESSION]['idcart'] > 0) {
 
-			$cart->get((int)$_SESSION[cart::SESSION]['idcart']);
+			$cart->get((int)$_SESSION[Cart::SESSION]['idcart']);
 
-		}else {
+		} else {
 
 			$cart->getFromSessionID();
 
@@ -34,8 +34,8 @@ class Cart extends Model {
 				if (User::checkLogin(false)) {
 
 					$user = User::getFromSession();
-
-					$data['iduser'] = $user->getiduser();					
+					
+					$data['iduser'] = $user->getiduser();	
 
 				}
 
@@ -44,6 +44,7 @@ class Cart extends Model {
 				$cart->save();
 
 				$cart->setToSession();
+
 
 			}
 
@@ -56,7 +57,7 @@ class Cart extends Model {
 	public function setToSession()
 	{
 
-		$_SESSION[cart::SESSION] =$this->getValues();
+		$_SESSION[Cart::SESSION] = $this->getValues();
 
 	}
 
@@ -75,7 +76,7 @@ class Cart extends Model {
 
 		}
 
-	}
+	}	
 
 	public function get(int $idcart)
 	{
@@ -145,56 +146,55 @@ class Cart extends Model {
 				':idproduct'=>$product->getidproduct()
 			]);
 
-	}		
+		}
 
-	$this->getCalculateTotal();
+		$this->getCalculateTotal();
 
- }
+	}
 
- 	public function getProducts()
- 	{
+	public function getProducts()
+	{
 
- 		$sql = new Sql();
+		$sql = new Sql();
 
- 		$rows = $sql->select("
- 			SELECT b.idproduct, b.desproduct , b.vlprice, b.vlwidth, b.vlheight, b.vllength, b.vlweight, b.desurl, COUNT(*) AS nrqtd, SUM(b.vlprice) AS vltotal 
+		$rows = $sql->select("
+			SELECT b.idproduct, b.desproduct , b.vlprice, b.vlwidth, b.vlheight, b.vllength, b.vlweight, b.desurl, COUNT(*) AS nrqtd, SUM(b.vlprice) AS vltotal 
 			FROM tb_cartsproducts a 
 			INNER JOIN tb_products b ON a.idproduct = b.idproduct 
 			WHERE a.idcart = :idcart AND a.dtremoved IS NULL 
 			GROUP BY b.idproduct, b.desproduct , b.vlprice, b.vlwidth, b.vlheight, b.vllength, b.vlweight, b.desurl 
 			ORDER BY b.desproduct
- 			", [
- 				':idcart'=>$this->getidcart()
- 			]);
+		", [
+			':idcart'=>$this->getidcart()
+		]);
 
- 		return Product::checkList($rows);
+		return Product::checkList($rows);
 
- 	}
+	}
 
- 	public function getProductsTotals()
- 	{
+	public function getProductsTotals()
+	{
 
- 		$sql = new Sql();
+		$sql = new Sql();
 
- 		$results = $sql->select("
- 			SELECT SUM(vlprice) AS vlprice, SUM(vlwidth) AS vlwidth, SUM(vlheight) AS vlheight, SUM(vllength)
- 			AS vllength, SUM(vlweight) AS vlweight, COUNT(*) AS nrqtd
-			FROM tb_products a 
+		$results = $sql->select("
+			SELECT SUM(vlprice) AS vlprice, SUM(vlwidth) AS vlwidth, SUM(vlheight) AS vlheight, SUM(vllength) AS vllength, SUM(vlweight) AS vlweight, COUNT(*) AS nrqtd
+			FROM tb_products a
 			INNER JOIN tb_cartsproducts b ON a.idproduct = b.idproduct
 			WHERE b.idcart = :idcart AND dtremoved IS NULL;
- 		", [
- 			'idcart'=>$this->getidcart()
- 		]);
+		", [
+			':idcart'=>$this->getidcart()
+		]);
 
- 		if (count($results) > 0) {
- 			return $results[0];
- 		}else {
- 			return [0];
- 		}
+		if (count($results) > 0) {
+			return $results[0];
+		} else {
+			return [];
+		}
 
- 	}
+	}
 
- 	public function setFreight($nrzipcode)
+	public function setFreight($nrzipcode)
 	{
 
 		$nrzipcode = str_replace('-', '', $nrzipcode);
@@ -251,9 +251,9 @@ class Cart extends Model {
 
 		}
 
- 	}
+	}
 
- 	public static function formatValueToDecimal($value):float
+	public static function formatValueToDecimal($value):float
 	{
 
 		$value = str_replace('.', '', $value);
@@ -271,7 +271,7 @@ class Cart extends Model {
 	public static function getMsgError()
 	{
 
-		$msg =  (isset($_SESSION[Cart::SESSION_ERROR])) ? $_SESSION[Cart::SESSION_ERROR] : "";
+		$msg = (isset($_SESSION[Cart::SESSION_ERROR])) ? $_SESSION[Cart::SESSION_ERROR] : "";
 
 		Cart::clearMsgError();
 
@@ -312,12 +312,12 @@ class Cart extends Model {
 		$this->updateFreight();
 
 		$totals = $this->getProductsTotals();
-		
+
 		$this->setvlsubtotal($totals['vlprice']);
-		$this->setvltotal($totals['vlprice'] + $this->getvlfreight());	
+		$this->setvltotal($totals['vlprice'] + (float)$this->getvlfreight());
 
 	}
-	
-}	
+
+}
 
  ?>

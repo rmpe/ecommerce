@@ -67,8 +67,8 @@
     </div>
     <!-- /.social-auth-links -->
 
-    <a href="/admin/forgot">Esqueci a minha senha</a><br>
-    <a href="register.html" class="text-center">Crie uma Conta</a>
+    <a href="/admin/forgot">I forgot my password</a><br>
+    <a href="register.html" class="text-center">Register a new membership</a>
 
   </div>
   <!-- /.login-box-body -->
